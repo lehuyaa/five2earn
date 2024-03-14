@@ -24,6 +24,7 @@
     "@react-navigation/native": "^6.0.12",
     "@react-navigation/stack": "^6.2.3",
     "@sentry/react-native": "^2.4.3",
+    "axios": "^1.6.7",
     "clone-deep": "^4.0.1",
     "eventemitter3": "^4.0.0",
     "query-string": "^7.0.1",

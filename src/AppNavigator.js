@@ -1,32 +1,34 @@
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {
-  NavigationContainer,
-  getFocusedRouteNameFromRoute,
-} from '@react-navigation/native';
-import {
-  CardStyleInterpolators,
-  createStackNavigator,
-} from '@react-navigation/stack';
 import * as React from 'react';
+import {Platform} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  CardStyleInterpolators,
+} from '@react-navigation/stack';
 import {Appbar} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import CustomTransceiveScreen from './Screens/CustomTransceive';
+import LandingScreen from './Screens/Landing';
 import HomeScreen from './Screens/Home';
+import TagDetailScreen from './Screens/TagDetail';
 import NdefTypeListScreen from './Screens/NdefTypeList';
 import NdefWriteScreen from './Screens/NdefWrite';
-import SavedRecordScreen from './Screens/SavedRecord';
-import SettingsScreen from './Screens/Settings';
-import TagDetailScreen from './Screens/TagDetail';
 import ToolKitScreen from './Screens/Toolkit';
+import TagKitScreen from './Screens/TagKit';
+import CustomTransceiveScreen from './Screens/CustomTransceive';
+import SettingsScreen from './Screens/Settings';
+import SavedRecordScreen from './Screens/SavedRecord';
+import NfcPromptAndroid from './Components/NfcPromptAndroid';
+import Toast from './Components/Toast';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as Theme from './Theme';
+import GameHome from './Screens/Start';
 import Game1 from './Screens/Game1';
 import Game2 from './Screens/Game2';
 import Game3 from './Screens/Game3';
-import GameHome from './Screens/Start';
 
 const RootStack = createStackNavigator();
 const MainStack = createStackNavigator();
-const GameStack = createStackNavigator();
 const HomeTabs = createBottomTabNavigator();
 
 function HomeTabNav() {
@@ -155,7 +157,8 @@ function Root(props) {
         presentation: 'modal',
         cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
       }}>
-      <RootStack.Screen name="Game" component={GameScreen} />
+      {/* <RootStack.Screen name="Game" component={GameScreen} /> */}
+      <RootStack.Screen name="Landing" component={LandingScreen} />
       <RootStack.Screen name="Settings" component={SettingsScreen} />
       <RootStack.Screen name="Main" component={Main} />
       <RootStack.Screen
@@ -171,8 +174,8 @@ function AppNavigator(props) {
   return (
     <NavigationContainer>
       <Root />
-      {/* <NfcPromptAndroid />
-      <Toast /> */}
+      <NfcPromptAndroid />
+      <Toast />
     </NavigationContainer>
   );
 }

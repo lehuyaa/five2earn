@@ -248,7 +248,7 @@ function HomeScreen(props) {
           icon={() => <Icon name="cog" size={32} />}
           style={styles.settingIcon}
           onPress={() => {
-            navigation.navigate('Main');
+            navigation.navigate('Settings');
           }}
         />
 

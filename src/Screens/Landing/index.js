@@ -68,7 +68,7 @@ function LandingScreen(props) {
         ]}
       />
 
-      {isNfcSupported === false ? (
+      {isNfcSupported !== false ? (
         <Text style={{fontSize: 24, padding: 20}}>
           Your device doesn't support NFC
         </Text>

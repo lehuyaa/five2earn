@@ -22,26 +22,39 @@ function Card(props) {
 
   const flipCard = async () => {
     if (isFlipped) {
-      Animated.spring(animatedValue, {
-        toValue: 0,
-        friction: 8,
-        tension: 10,
-        useNativeDriver: true,
-      }).start();
+      // console.log('isFlipped');
+      // Animated.spring(animatedValue, {
+      //   toValue: 0,
+      //   friction: 8,
+      //   tension: 10,
+      //   useNativeDriver: true,
+      // }).start(() => {
+      //   // props.onFlipImage();
+      //   console.log('flipped');
+      // });
     } else {
+      console.log('isFlipped2');
+
       Animated.spring(animatedValue, {
         toValue: 180,
         friction: 8,
         tension: 10,
         useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        props.onFlipImage();
+        console.log('flipped2');
+      });
     }
     setIsFlipped(!isFlipped);
-    props.onFlipImage();
+    // props.onFlipImage();
   };
 
   return (
-    <View>
+    <View
+      style={{
+        width: '100%',
+        height: '100%',
+      }}>
       <TouchableOpacity onPress={flipCard}>
         <Animated.View style={[styles.flipCard, frontAnimatedStyle]}>
           <Text style={styles.flipText}>{props.value}</Text>
@@ -65,9 +78,12 @@ const styles = StyleSheet.create({
     backfaceVisibility: 'hidden',
   },
   flipCardBack: {
-    backgroundColor: 'red',
+    backgroundColor: 'blue',
     position: 'absolute',
     top: 0,
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: '#77f94c',
   },
   flipText: {
     fontSize: 20,

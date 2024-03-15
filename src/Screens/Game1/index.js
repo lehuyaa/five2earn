@@ -1,8 +1,21 @@
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import JiggleCard from './components/JiggleCard';
 import Card from './components/Card';
 import {Appbar} from 'react-native-paper';
+import {Image} from 'react-native';
+
+const {width} = Dimensions.get('window');
+
+const MARGIN_PERCENT = 2;
+const squareMargin = (width * MARGIN_PERCENT) / 100;
+const squareWidth = (width * 0.9 - squareMargin * 6) / 5;
 
 function Game1(props) {
   const [boardImages, setBoardImages] = useState([]);
@@ -67,14 +80,85 @@ function Game1(props) {
       setResultText('Incorrect!');
     }
   };
-
+  const progress = (1 / 5) * 100;
   return (
-    <View>
-      <Appbar.Header style={{backgroundColor: 'white'}}>
-        <Appbar.BackAction onPress={() => props.navigation.goBack()} />
-        <Text style={{marginLeft: 10, fontSize: 18}}>Game1</Text>
-      </Appbar.Header>
-      <View style={styles.grid}>
+    <View style={styles.grid}>
+      <View style={styles.infoUserSection}>
+        <Image source={require('../../../images/Game/Logo.png')} />
+        <View style={{alignItems: 'flex-end'}}>
+          <Text
+            style={{
+              color: '#77F94C',
+              fontSize: 20,
+              fontWeight: '500',
+              lineHeight: 24,
+            }}>
+            Cuong
+          </Text>
+          <Text>
+            <Text
+              style={{
+                color: '#6d6e71',
+                fontSize: 20,
+                fontWeight: '400',
+                lineHeight: 24,
+              }}>
+              Time left:{' '}
+            </Text>
+            <Text
+              style={{
+                color: '#FFFFFF',
+                fontSize: 20,
+                fontWeight: '400',
+                lineHeight: 24,
+              }}>
+              00:00:15 s
+            </Text>
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.infoGameSection}>
+        <Text
+          style={{
+            color: '#FFFFFF',
+            fontSize: 24,
+            fontWeight: '700',
+            lineHeight: 28.8,
+          }}>
+          Choose your correct answer
+        </Text>
+        <Text
+          style={{
+            color: '#D1D3D4',
+            fontSize: 16,
+            fontWeight: '400',
+            lineHeight: 19,
+            marginTop: 10,
+          }}>
+          You are allowed a maximum of 5 numbers for this game
+        </Text>
+      </View>
+
+      <View style={styles.containerProgress}>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 5,
+          }}>
+          <Text style={styles.sessionText}>Session</Text>
+          <Text style={styles.sessionCount}>{`${1} of ${5}`}</Text>
+        </View>
+
+        <View style={styles.progressBarContainer}>
+          <View style={[styles.progressBar, {width: `${progress}%`}]} />
+        </View>
+      </View>
+
+      <View style={styles.gameSections}>
         {boardImages.map((image, index) => (
           <TouchableOpacity
             key={index}
@@ -91,27 +175,74 @@ function Game1(props) {
           </TouchableOpacity>
         ))}
       </View>
-      <Text>{resultText}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   grid: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#151515',
+  },
+  infoUserSection: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: width * 0.86,
+    marginTop: 30,
+  },
+  infoGameSection: {
+    width: width * 0.86,
+    marginTop: 30,
+  },
+  gameSections: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    width: width * 0.9,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 50,
+    marginTop: squareMargin,
   },
   box: {
-    width: 60,
-    height: 60,
-    margin: 5,
+    width: squareWidth,
+    height: squareWidth,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: squareMargin / 2,
+    borderRadius: 5,
+    overflow: 'hidden',
   },
-  image: {
-    width: '100%',
+  containerProgress: {
+    marginTop: 20,
+    height: '10%',
+    width: width * 0.86,
+  },
+  sessionText: {
+    color: '#D3FB51', // Text color for the 'Session' label
+    marginRight: 5,
+    fontWeight: '400',
+    fontSize: 16,
+    lineHeight: 19,
+  },
+  progressBarContainer: {
+    flex: 1,
+    maxHeight: 10,
+    backgroundColor: 'grey', // Background color of the full progress bar
+    borderRadius: 10,
+    overflow: 'hidden', // Ensure the inner bar does not exceed the container's rounded corners
+  },
+  progressBar: {
     height: '100%',
+    backgroundColor: '#D3FB51', // Color for the progress indicator
+  },
+  sessionCount: {
+    color: '#D3FB51', // Text color for the '1 of 5' label
+    marginLeft: 5,
+    fontWeight: '700',
+    fontSize: 16,
+    lineHeight: 19,
   },
 });
 

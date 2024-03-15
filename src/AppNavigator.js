@@ -26,9 +26,11 @@ import GameHome from './Screens/Start';
 import Game1 from './Screens/Game1';
 import Game2 from './Screens/Game2';
 import Game3 from './Screens/Game3';
+import EnterUserName from './Screens/EnterUserName';
 
 const RootStack = createStackNavigator();
 const MainStack = createStackNavigator();
+const GameStack = createStackNavigator();
 const HomeTabs = createBottomTabNavigator();
 
 function HomeTabNav() {
@@ -157,10 +159,10 @@ function Root(props) {
         presentation: 'modal',
         cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
       }}>
-      {/* <RootStack.Screen name="Game" component={GameScreen} /> */}
       <RootStack.Screen name="Landing" component={LandingScreen} />
       <RootStack.Screen name="Settings" component={SettingsScreen} />
       <RootStack.Screen name="Main" component={Main} />
+      <RootStack.Screen name="Game" component={GameScreen} />
       <RootStack.Screen
         name="MainTabs"
         component={HomeTabNav}

@@ -21,46 +21,6 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="com.revteltech.nfcopenrewriter"
-                  android:host="*" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="com.washow.nfcopenrewriter"
-                  android:host="*" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https"
-                  android:host="www.nfctogo.com" 
-                  android:pathPrefix="/applink" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT"/>
-            <data android:scheme="https"
-                  android:host="www.nfctogo.com" 
-                  android:pathPrefix="/applink" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
-            <category android:name="android.intent.category.DEFAULT"/>
-            <data android:scheme="https"
-                  android:host="api.realitag.app" 
-                  android:pathPrefix="" />
-        </intent-filter>
-        <intent-filter>
-          <action android:name="android.nfc.action.TECH_DISCOVERED"/>
-        </intent-filter>
         <meta-data android:name="android.nfc.action.TECH_DISCOVERED"
                    android:resource="@xml/nfc_tech_filter" />
       </activity>

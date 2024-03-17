@@ -51,7 +51,11 @@ function JiggleCard(props) {
   };
 
   return (
-    <View>
+    <View
+      style={{
+        width: '100%',
+        height: '100%',
+      }}>
       <TouchableOpacity onPress={startJiggle}>
         <Animated.View style={[styles.card, animatedStyle]}>
           <Text style={styles.cardText}>{props.value}</Text>

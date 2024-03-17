@@ -5,9 +5,12 @@ import {
   ActivityIndicator,
   Animated,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 import * as AppContext from '../../AppContext';
 import NfcProxy from '../../NfcProxy';
+import request from '../../api/request';
+import {checkFirstJoinAPI} from '../../api/modules/api-app/api_game1';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -57,6 +60,12 @@ function LandingScreen(props) {
     initialize();
   }, [props.navigation, opacityAnimValue, scaleAnimValue]);
 
+  const checkFirstJoinFunc = async () => {
+    props.navigation.navigate('Game', {
+      screen: 'GameHome',
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Animated.Image
@@ -67,7 +76,18 @@ function LandingScreen(props) {
           {opacity: opacityAnimValue, transform: [{scale: scaleAnimValue}]},
         ]}
       />
-
+      <TouchableOpacity
+        onPress={checkFirstJoinFunc}
+        style={{
+          width: 100,
+          height: 50,
+          backgroundColor: 'red',
+          color: 'white',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Text>Check</Text>
+      </TouchableOpacity>
       {isNfcSupported === false ? (
         <Text style={{fontSize: 24, padding: 20}}>
           Your device doesn't support NFC

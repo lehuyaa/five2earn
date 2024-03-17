@@ -27,7 +27,7 @@ function HomeScreen(props) {
             height: '100%',
             position: 'absolute',
           }}
-          source={require('../../asstes/images/bg_pattern.png')}
+          source={require('../../../images/Game/bg_pattern.png')}
         />
         <Text
           style={{
@@ -96,7 +96,8 @@ function HomeScreen(props) {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView />
       <View style={{flex: 1}}>
-        {enabled ? renderNfcButtons() : renderNfcNotEnabled()}
+        {/* {enabled ? renderNfcButtons() : renderNfcNotEnabled()} */}
+        {renderNfcButtons()}
       </View>
     </>
   );

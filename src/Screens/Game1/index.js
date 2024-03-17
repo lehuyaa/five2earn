@@ -1,15 +1,14 @@
+import React, {useEffect, useState} from 'react';
 import {
-  View,
+  Dimensions,
+  Image,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Dimensions,
+  View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import JiggleCard from './components/JiggleCard';
 import Card from './components/Card';
-import {Appbar} from 'react-native-paper';
-import {Image} from 'react-native';
+import JiggleCard from './components/JiggleCard';
 
 const {width} = Dimensions.get('window');
 
@@ -81,6 +80,7 @@ function Game1(props) {
     }
   };
   const progress = (1 / 5) * 100;
+
   return (
     <View style={styles.grid}>
       <View style={styles.infoUserSection}>
@@ -161,7 +161,6 @@ function Game1(props) {
       <View style={styles.gameSections}>
         {boardImages.map((image, index) => (
           <TouchableOpacity
-            key={index}
             onPress={() => handlePress(image)}
             style={styles.box}>
             {image == imageCorrect ? (

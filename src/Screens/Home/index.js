@@ -10,6 +10,7 @@ import {
 import {Button} from 'react-native-paper';
 import NfcProxy from '../../NfcProxy';
 import {useScanNFC} from '../../hooks/useScanNFC';
+import {checkNFC} from '../../api/modules/nfc/api-nfc';
 
 function HomeScreen(props) {
   const {navigation} = props;
@@ -17,6 +18,16 @@ function HomeScreen(props) {
   const {scanNFC} = useScanNFC();
   const padding = 40;
   const width = Dimensions.get('window').width - 2 * padding;
+
+  const checkNFCRq = async (nfcId) => {
+    try {
+      const check = await checkNFC(nfcId);
+      return check;
+    } catch (error) {
+      console.log(JSON.stringify(error));
+      return null;
+    }
+  };
 
   function renderNfcButtons() {
     return (
@@ -50,7 +61,11 @@ function HomeScreen(props) {
           onPress={async () => {
             const tag = await scanNFC();
             if (tag) {
-              navigation.navigate('Game', {params: {tag}});
+              const check = await checkNFCRq(tag.id);
+              console.log('check', check?.meta?.pagination?.total);
+              if (check?.meta?.pagination?.total === 1) {
+                navigation.navigate('Game', {params: {tag}});
+              }
             }
           }}
           style={{width, backgroundColor: '#553EF4', marginTop: '15%'}}>

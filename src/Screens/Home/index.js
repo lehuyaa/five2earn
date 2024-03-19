@@ -11,6 +11,7 @@ import {Button} from 'react-native-paper';
 import NfcProxy from '../../NfcProxy';
 import {useScanNFC} from '../../hooks/useScanNFC';
 import {checkNFC} from '../../api/modules/nfc/api-nfc';
+import {AsyncStorage} from 'react-native';
 
 function HomeScreen(props) {
   const {navigation} = props;
@@ -60,12 +61,12 @@ function HomeScreen(props) {
           mode="contained"
           onPress={async () => {
             const tag = await scanNFC();
-            if (tag) {
+            if (tag.id) {
               const check = await checkNFCRq(tag.id);
-              console.log('check', check?.meta?.pagination?.total);
-              if (check?.meta?.pagination?.total === 1) {
-                navigation.navigate('Game', {params: {tag}});
-              }
+              await AsyncStorage.setItem('nfcID', tag.id);
+              // if (check?.meta?.pagination?.total === 1) {
+              navigation.navigate('Game', {params: {tag}});
+              // }
             }
           }}
           style={{width, backgroundColor: '#553EF4', marginTop: '15%'}}>

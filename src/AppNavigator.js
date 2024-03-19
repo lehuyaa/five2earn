@@ -5,6 +5,7 @@ import {
 } from '@react-navigation/stack';
 import * as React from 'react';
 import LandingScreen from './Screens/Landing';
+import Toast from 'react-native-toast-message';
 
 import HomeScreen from './Screens/Home';
 
@@ -13,7 +14,7 @@ import Game2 from './Screens/Game2';
 import Game3 from './Screens/Game3';
 import GameHome from './Screens/Start';
 import NfcPromptAndroid from './Components/NfcPromptAndroid';
-import Toast from './Components/Toast';
+// import Toast from './Components/Toast';
 import ConfirmJoinGame from './Screens/ConfirmJoinGame';
 
 const RootStack = createStackNavigator();

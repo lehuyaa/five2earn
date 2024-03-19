@@ -16,6 +16,9 @@ import GameHome from './Screens/Start';
 import NfcPromptAndroid from './Components/NfcPromptAndroid';
 // import Toast from './Components/Toast';
 import ConfirmJoinGame from './Screens/ConfirmJoinGame';
+import WinScreen from './Screens/Win';
+import Test from './Screens/Game1/test';
+import LoseScreen from './Screens/Lose';
 
 const RootStack = createStackNavigator();
 const GameStack = createStackNavigator();
@@ -31,6 +34,9 @@ function GameScreen() {
       <GameStack.Screen name="Game2" component={Game2} />
       <GameStack.Screen name="Game3" component={Game3} />
       <GameStack.Screen name="ConfirmJoinGame" component={ConfirmJoinGame} />
+      <GameStack.Screen name="Win" component={WinScreen} />
+      <GameStack.Screen name="Lose" component={LoseScreen} />
+      <GameStack.Screen name="Test" component={Test} />
     </GameStack.Navigator>
   );
 }

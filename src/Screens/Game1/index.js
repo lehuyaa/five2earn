@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
   Image,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,6 +10,11 @@ import {
 } from 'react-native';
 import Card from './components/Card';
 import JiggleCard from './components/JiggleCard';
+import {
+  checkExistMatchProgressAPI,
+  checkProgressionCompetitorAPI,
+  updateMatchStatusToLoseAPI,
+} from '../../api/modules/api-app/api_game1';
 
 const {width} = Dimensions.get('window');
 
@@ -17,10 +23,37 @@ const squareMargin = (width * MARGIN_PERCENT) / 100;
 const squareWidth = (width * 0.9 - squareMargin * 6) / 5;
 
 function Game1(props) {
+  const {navigation, route} = props;
   const [boardImages, setBoardImages] = useState([]);
   const [countLevelCompleted, setCountLevelCompleted] = useState(0);
   const [imageCorrect, setImageCorrect] = useState();
-  const [resultText, setResultText] = useState('');
+  const [isShowModalNotEnough, setIsShowModalNotEnough] = useState(false);
+  const [timer, setTimer] = useState(15);
+  const [isClearTimeoutSoWin, setIsClearTimeoutSoWin] = useState(false);
+  const progress = ((countLevelCompleted + 1) / 5) * 100;
+  const {myIDNFC, idNFCCompetior} = route.params;
+
+  // TODO: count down time
+  useEffect(() => {
+    // If the timer is 0, return early to stop the countdown
+    if (timer === 0) {
+      // handle loser
+      setIsShowModalNotEnough(true);
+      handleLose();
+      return;
+    }
+
+    // Create a timeout to decrease the timer value by 1 every second
+    const interval = setTimeout(() => {
+      setTimer(timer - 1);
+    }, 2000);
+
+    if (isClearTimeoutSoWin || isShowModalNotEnough) {
+      clearTimeout(interval);
+    }
+    // Clear the timeout if the component is unmounted or timer reaches 0
+    return () => clearTimeout(interval);
+  }, [timer]);
 
   useEffect(() => {
     setBoardImages(shuffleAndPickImages(images));
@@ -67,22 +100,119 @@ function Game1(props) {
     return array;
   }
 
-  const handlePress = (image) => {
+  const handlePress = async (image) => {
     console.log('image choose: ', image, imageCorrect);
     if (imageCorrect == image) {
-      // Correct selection, handle victory
-      // Here you might reset the game or progress to the next level
-      setResultText('Correct!');
-      setCountLevelCompleted(countLevelCompleted + 1);
-    } else {
-      // Incorrect selection, provide feedback or hint
-      setResultText('Incorrect!');
+      // first check progress of competitor
+      const isCompetitorWin = await onCheckResultOfMatch();
+
+      // if competitor win -> show lose notification
+      if (isCompetitorWin) {
+        await handleLose();
+        setIsClearTimeoutSoWin(true);
+        navigation.navigate('Game', {
+          screen: 'Lose',
+        });
+      } else {
+        // if competitor no win -> continue -> if countLevelCompleted == 4 -> show winner notification
+        if (countLevelCompleted == 4) {
+          // handle winner
+          await handleWin();
+          setIsClearTimeoutSoWin(true);
+          navigation.navigate('Game', {
+            screen: 'Win',
+          });
+        } else {
+          setCountLevelCompleted(countLevelCompleted + 1);
+          setTimer(15);
+        }
+      }
     }
   };
-  const progress = (1 / 5) * 100;
 
+  const onCheckResultOfMatch = async () => {
+    try {
+      const responseCheckProgressionCompetitor =
+        await checkProgressionCompetitorAPI({
+          'filters[IdNFC][$eq]': idNFCCompetior,
+          'filters[MatchedIdNFC][$eq]': myIDNFC,
+          'filters[Status][$eq]': 'WIN',
+        });
+      console.log(
+        'responseCheckProgressionCompetitor: ',
+        responseCheckProgressionCompetitor,
+      );
+      if (responseCheckProgressionCompetitor.data.length > 0) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log('error of responseCheckProgressionCompetitor: ', error);
+    }
+  };
+
+  // handle okay button navigation to game home
+  const handleNext = () => {
+    navigation.navigate('Game', {
+      screen: 'GameHome',
+    });
+  };
+
+  // handle lose
+  const handleLose = async () => {
+    const infoCurrentMatch = await checkExistMatchProgressAPI({
+      'filters[IdNFC][$eq]': myIDNFC,
+      'filters[MatchedIdNFC][$eq]': idNFCCompetior,
+      'filters[Status][$eq]': 'PROGRESS',
+    });
+    const {id} = infoCurrentMatch.data[0];
+    await updateMatchStatusToLoseAPI(
+      {
+        data: {
+          Status: 'LOSE',
+        },
+      },
+      id,
+    );
+  };
+
+  const handleWin = async () => {
+    const infoCurrentMatch = await checkExistMatchProgressAPI({
+      'filters[IdNFC][$eq]': myIDNFC,
+      'filters[MatchedIdNFC][$eq]': idNFCCompetior,
+      'filters[Status][$eq]': 'PROGRESS',
+    });
+    const {id} = infoCurrentMatch.data[0];
+    await updateMatchStatusToLoseAPI(
+      {
+        data: {
+          Status: 'WIN',
+        },
+      },
+      id,
+    );
+  };
   return (
     <View style={styles.grid}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isShowModalNotEnough}
+        onRequestClose={() => {
+          setIsShowModalNotEnough(!isShowModalNotEnough);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Sorry, you will get NO points for this match. Please find other
+              opponents to continue the game
+            </Text>
+            <TouchableOpacity style={styles.button} onPress={handleNext}>
+              <Text style={styles.textStyle}>Okay</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.infoUserSection}>
         <Image source={require('../../../images/Game/Logo.png')} />
         <View style={{alignItems: 'flex-end'}}>
@@ -112,7 +242,7 @@ function Game1(props) {
                 fontWeight: '400',
                 lineHeight: 24,
               }}>
-              00:00:15 s
+              00:00:{timer} s
             </Text>
           </Text>
         </View>
@@ -150,7 +280,9 @@ function Game1(props) {
             marginBottom: 5,
           }}>
           <Text style={styles.sessionText}>Session</Text>
-          <Text style={styles.sessionCount}>{`${1} of ${5}`}</Text>
+          <Text style={styles.sessionCount}>{`${
+            countLevelCompleted + 1
+          } of ${5}`}</Text>
         </View>
 
         <View style={styles.progressBarContainer}>
@@ -242,6 +374,58 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
     lineHeight: 19,
+  },
+
+  // Modal
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dimmed background
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: '#553EF4', // Match your color
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    color: '#FFF', // White color for the text
+    fontSize: 20,
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  modalTextSmall: {
+    marginBottom: 15,
+    textAlign: 'center',
+    color: '#FFF', // White color for the smaller text
+    fontSize: 14,
+  },
+  button: {
+    borderRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    elevation: 2,
+    backgroundColor: '#D3FB51', // Yellow color for the button
+    minWidth: '90%',
+  },
+  textStyle: {
+    color: '#553EF4', // Black color for the button text
+    fontSize: 18,
+    fontWeight: '500',
+    lineHeight: 22,
+    textAlign: 'center',
   },
 });
 

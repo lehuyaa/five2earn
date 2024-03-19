@@ -14,7 +14,7 @@ function GameHome(props) {
   const onJoinGame = async (idGame) => {
     if (idGame === 0) {
       navigation.navigate('Game', {
-        screen: 'ConfirmJoinGame',
+        screen: 'Test',
       });
     }
     if (idGame === 1) {

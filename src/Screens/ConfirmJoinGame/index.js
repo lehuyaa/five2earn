@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions} from 'react-native';
+import {Dimensions, Modal, View} from 'react-native';
 import {
   ImageBackground,
   StyleSheet,
@@ -22,26 +22,29 @@ import {
 const {width} = Dimensions.get('window');
 
 function ConfirmJoinGame(props) {
-  const {navigation} = props;
+  const {navigation, route} = props;
   const [isConfirm, setIsConfirm] = useState(false);
   const [isResponseAfterTimeout, setIsResponseAfterTimeout] = useState(true);
 
   const [isFetching, setIsFetching] = useState(false);
   const [isWaitCompetitor, setIsWaitCompetitor] = useState(false);
+  const [isExistPreviousMatch, setIsExistPreviousMatch] = useState(false);
+  const {myIDNFC, idNFCCompetior} = route.params;
 
   useEffect(() => {
     if (isWaitCompetitor) {
       // Set up the interval
-      const intervalId = setInterval(onWaitCompetitorReply, 500); // 500ms interval
+      const intervalId = setInterval(onWaitCompetitorReply, 1000); // 1000ms interval
 
       const timeoutExpired = setTimeout(() => {
         setIsResponseAfterTimeout(false);
+        setIsWaitCompetitor(false);
         setTimeout(() => {
-          props.navigation.navigate('Game', {
+          navigation.navigate('Game', {
             screen: 'GameHome',
           });
         }, 3000);
-      }, 15000);
+      }, 250000);
 
       // Clean up the interval on component unmount
       return () => {
@@ -57,12 +60,22 @@ function ConfirmJoinGame(props) {
     setIsFetching(true); // Set fetching flag
     try {
       const response = await checkCanStartGameAPI({
-        'filters[IdNFC][$eq]': '035E2382511330',
+        'filters[IdNFC][$eq]': myIDNFC,
         'filters[Status][$eq]': 'PROGRESS',
       });
       // If the competitor has replied, navigate to the game screen
       const {data} = response;
-      console.log(data);
+      if (data?.length > 0) {
+        console.log('Competitor has replied');
+        setIsWaitCompetitor(false);
+        navigation.navigate('Game', {
+          screen: 'Game1',
+          params: {
+            myIDNFC,
+            idNFCCompetior,
+          },
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -72,8 +85,8 @@ function ConfirmJoinGame(props) {
 
   const onCheckExistPreviousMatch = async () => {
     const checkExistPreviousMatchParams = {
-      'filters[IdNFC][$eq]': '035E2382511330',
-      'filters[MatchedIdNFC][$eq]': '015E2332541341',
+      'filters[IdNFC][$eq]': myIDNFC,
+      'filters[MatchedIdNFC][$eq]': idNFCCompetior,
       'filters[$or][0][Status][$eq]': 'WIN',
       'filters[$or][1][Status][$eq]': 'LOSE',
     };
@@ -98,8 +111,7 @@ function ConfirmJoinGame(props) {
   const onCheckAndUpdateMatchPending = async () => {
     try {
       const checkStatusMatchPendingParams = {
-        'filters[Status][$eq]': '035E2382511330',
-        'filters[MatchedIdNFC][$eq]': '015E2332541347',
+        'filters[IdNFC][$eq]': myIDNFC,
         'filters[Status][$eq]': 'PENDING',
       };
       const checkExistMatchPendingResponse = await checkExistMatchPendingAPI(
@@ -132,8 +144,8 @@ function ConfirmJoinGame(props) {
   const onCheckAndUpdateMatchProgress = async () => {
     try {
       const checkExistMatchProgressParams = {
-        'filters[IdNFC][$eq]': '035E2382511330',
-        'filters[MatchedIdNFC][$eq]': '015E2332541341',
+        'filters[IdNFC][$eq]': myIDNFC,
+        'filters[MatchedIdNFC][$eq]': idNFCCompetior,
         'filters[Status][$eq]': 'PROGRESS',
       };
       const checkExistMatchProgressResponse = await checkExistMatchProgressAPI(
@@ -165,7 +177,7 @@ function ConfirmJoinGame(props) {
 
   const onCheckAndUpdateMatchCurrent = async () => {
     const checkMatchCurrentPendingParams = {
-      'filters[MatchedIdNFC][$eq]': '015E2332541347',
+      'filters[MatchedIdNFC][$eq]': myIDNFC,
       'filters[Status][$eq]': 'PENDING',
     };
 
@@ -178,14 +190,13 @@ function ConfirmJoinGame(props) {
     if (checkMatchCurrentPendingResponse.data?.length > 0) {
       // checkMatchCurrentPendingResponse.data?.length === 0 means this is the person invited to join
       // for player 2
-      console.log('Show notification exists next match');
       const {id} = checkMatchCurrentPendingResponse.data[0];
       await updateStatusToProgressAPI({
         data: {
-          IdNFC: '035E2382511336',
+          IdNFC: myIDNFC,
           Status: 'PROGRESS',
           Point: 0,
-          MatchedIdNFC: '015E2332541341',
+          MatchedIdNFC: idNFCCompetior,
         },
       });
       await updateMatchStatusToProgressAPI(
@@ -196,15 +207,22 @@ function ConfirmJoinGame(props) {
         },
         id,
       );
+      navigation.navigate('Game', {
+        screen: 'Game1',
+        params: {
+          myIDNFC,
+          idNFCCompetior,
+        },
+      });
     } else {
       // checkMatchCurrentPendingResponse.data?.length === 0 means this is the person who started the match first
       // for player 1
       await updateStatusToPendingAPI({
         data: {
-          IdNFC: '035E2382511338',
+          IdNFC: myIDNFC,
           Status: 'PENDING',
           Point: 0,
-          MatchedIdNFC: '015E2332541343',
+          MatchedIdNFC: idNFCCompetior,
         },
       });
 
@@ -217,9 +235,15 @@ function ConfirmJoinGame(props) {
     const isUpdateMatchProgressSuccess = await onCheckAndUpdateMatchProgress();
 
     if (isUpdateMatchPendingSuccess && isUpdateMatchProgressSuccess) {
+      console.log('Update match pending and progress success');
+      // after update match pending and progress success -> check exist previous match
       const isExistPreviousMatch = await onCheckExistPreviousMatch();
-      if (isExistPreviousMatch) return; // Exit if there is an existing match
-      onCheckAndUpdateMatchCurrent();
+
+      if (isExistPreviousMatch) {
+        setIsExistPreviousMatch(true);
+        return;
+      } // isExistPreviousMatch = true means exist previous match -> show notification
+      await onCheckAndUpdateMatchCurrent();
     }
   };
 
@@ -228,12 +252,39 @@ function ConfirmJoinGame(props) {
     await onCheckBeforeJoinMatch();
   };
 
+  // handle okay button navigation to game home
+  const handleNext = () => {
+    navigation.navigate('Game', {
+      screen: 'GameHome',
+    });
+  };
+
   return isConfirm ? (
     isResponseAfterTimeout ? (
       // TODO: Wait for the competitor to reply
       <ImageBackground
         source={require('../../../images/Game/onbording2.png')}
-        style={styles.container}></ImageBackground>
+        style={styles.container}>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isExistPreviousMatch}
+          onRequestClose={() => {
+            setIsShowModalNotEnough(!isExistPreviousMatch);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                You already played against this opponent. We encourage you to
+                find a new opponent for a new game.
+              </Text>
+              <TouchableOpacity style={styles.button} onPress={handleNext}>
+                <Text style={styles.textStyle}>Okay</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </ImageBackground>
     ) : (
       // TODO: competitor no reply
       <ImageBackground
@@ -244,7 +295,7 @@ function ConfirmJoinGame(props) {
     <ImageBackground
       source={require('../../../images/Game/onbording.png')}
       style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={onConfirm}>
+      <TouchableOpacity style={styles.buttonConfirm} onPress={onConfirm}>
         <Text style={styles.buttonText}>Yes, I confirm</Text>
       </TouchableOpacity>
     </ImageBackground>
@@ -259,7 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000080', // Adjust the background color to match your theme
     padding: 20,
   },
-  button: {
+  buttonConfirm: {
     width: 0.9 * width,
     height: 56,
     paddingHorizontal: 24,
@@ -274,6 +325,58 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     fontWeight: '500',
+  },
+
+  // Modal
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dimmed background
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: '#553EF4', // Match your color
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    color: '#FFF', // White color for the text
+    fontSize: 20,
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  modalTextSmall: {
+    marginBottom: 15,
+    textAlign: 'center',
+    color: '#FFF', // White color for the smaller text
+    fontSize: 14,
+  },
+  button: {
+    borderRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    elevation: 2,
+    backgroundColor: '#D3FB51', // Yellow color for the button
+    minWidth: '90%',
+  },
+  textStyle: {
+    color: '#553EF4', // Black color for the button text
+    fontSize: 18,
+    fontWeight: '500',
+    lineHeight: 22,
+    textAlign: 'center',
   },
 });
 export default ConfirmJoinGame;

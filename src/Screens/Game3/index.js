@@ -37,7 +37,12 @@ function Game3(props) {
 
   return (
     <View style={{flex: 1}}>
-      <View style={{flexDirection: 'column', alignItems: 'center', flex: 1}}>
+      <View
+        style={{
+          flexDirection: 'column',
+          alignItems: 'center',
+          flex: 1,
+        }}>
         <Image
           style={{
             width: '100%',
@@ -52,6 +57,8 @@ function Game3(props) {
             fontSize: 28,
             fontWeight: '700',
             marginTop: '40%',
+            marginLeft: 10,
+            marginRight: 10,
           }}>
           Choose the correct answer and become the winner!{' '}
         </Text>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const TOKEN =
-  '5f16f99c48ad8384188157dc189e0a6abf31cf4aa6b574fea055e387223aacf33067ca9e05bd48e5f03aa56b2657585aa75ed6dabbcdb47d5e6ddccf9922b91848c94ad399421c2e6e2673f99b9eb480fb9b3215e6ff2a2b2bc101528cce0e92ebfea46ef2b3741f3510873601eaf51ea0b410cbfb8c7577ceb758ed74ece18f';
+  '66aefd775b9cc8d9903e8c7ca502a6c65ac2992ee7e6f9d82dbcbb7e89c354ebf2109190a77091016ffd2c0eb1cb0815acaaa6eaef618cd10f7edd376df9c2d22c07fb2f20030e97e169d51fcfe13021efd2611feef462c66f1b36ea8f3111623a9fc366cd41be00226ef871b8938440f9c4a87761b3e7960a8e1ea2427a621e';
 const request = axios.create({
   baseURL: 'https://flex2earn.virtualx.vn/',
   headers: {Accept: '*/*'},

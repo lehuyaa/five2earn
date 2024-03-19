@@ -1,12 +1,14 @@
 import React from 'react';
-import {Text, View, Image, FlatList} from 'react-native';
+import {Text, View, Image, FlatList, Dimensions} from 'react-native';
 import Answer from './Answer';
 
+const padding = 15;
+const width = Dimensions.get('window').width - 2 * padding;
 const Question = ({setTick, tick, question, setAnswer}) => {
   return (
     <View
       style={{
-        width: '100%',
+        width: width,
         backgroundColor: '#242731',
         marginTop: 20,
         paddingTop: 20,
@@ -23,7 +25,13 @@ const Question = ({setTick, tick, question, setAnswer}) => {
         <View style={{flexDirection: 'row'}}>
           <Image source={require('../../../images/Game/logo_game.png')} />
           <View style={{marginLeft: 14}}>
-            <Text style={{fontSize: 16, fontWeight: '700', color: 'white'}}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '700',
+                color: 'white',
+                width: 250,
+              }}>
               {question.Content}
             </Text>
             <Text style={{fontSize: 14, fontWeight: '400', color: 'white'}}>

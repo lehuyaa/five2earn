@@ -27,11 +27,6 @@ function QuizApp(props) {
   const [answer, setAnswer] = React.useState('');
   const [isResult, setIsResult] = React.useState(false);
   const [isHistory, setIsHistory] = React.useState(false);
-
-  useEffect(() => {
-    getIndex();
-  }, []);
-
   const getIndex = async () => {
     try {
       const nfcID = await AsyncStorage.getItem('nfcID');
@@ -61,6 +56,14 @@ function QuizApp(props) {
     }
   };
 
+  useEffect(() => {
+    getIndex();
+  }, []);
+
+  if (isHistory) {
+    return <History />;
+  }
+
   const submit = async () => {
     try {
       const nfcID = await AsyncStorage.getItem('nfcID');
@@ -85,106 +88,107 @@ function QuizApp(props) {
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-      {isHistory ? (
-        <History />
-      ) : (
-        <View style={{flexDirection: 'column', alignItems: 'center', flex: 1}}>
-          <Image
+      <View style={{flexDirection: 'column', alignItems: 'center', flex: 1}}>
+        <Image
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+          }}
+          source={require('../../../images/Game/bg_pattern.png')}
+        />
+        <View style={{paddingHorizontal: 16, width: '100%'}}>
+          <View
             style={{
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-            }}
-            source={require('../../../images/Game/bg_pattern.png')}
-          />
-          <View style={{paddingHorizontal: 16, width: '100%'}}>
-            <View
-              style={{
-                flexDirection: 'row',
-                marginTop: '20%',
-                justifyContent: 'space-between',
-              }}>
-              <Text
-                style={{
-                  color: 'white',
-                  fontSize: 28,
-                  fontWeight: '700',
-                  textAlign: 'left',
-                }}>
-                Hi, Mr. Cuong!
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  console.log('ehheee');
-                  setIsHistory(true);
-                }}
-                style={{height: '100%'}}>
-                <Text
-                  style={{
-                    color: 'white',
-                    fontSize: 14,
-                    fontWeight: '700',
-                    marginTop: '20%',
-                    marginRight: 15,
-                  }}>
-                  View History
-                </Text>
-              </TouchableOpacity>
-            </View>
+              flexDirection: 'row',
+              marginTop: '20%',
+              justifyContent: 'space-between',
+            }}>
             <Text
               style={{
                 color: 'white',
-                fontSize: 20,
-                fontWeight: '400',
+                fontSize: 28,
+                fontWeight: '700',
                 textAlign: 'left',
               }}>
-              Choose the best answer to the question below. Each question might
-              have more than 1 correct answer
+              Hi, Mr. Cuong!
             </Text>
-            {isResult ? (
-              <Result question={question} answer={answer} />
-            ) : (
-              <Question
-                setTick={setTick}
-                tick={tick}
-                question={question}
-                setAnswer={setAnswer}
-              />
-            )}
-
-            <View style={{height: 200}}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (isResult) {
-                    props.navigation.navigate('GameHome', {
-                      params: {tag: 'hehe'},
-                    });
-                    return;
-                  }
-                  setModalVisible(true);
-                }}
-                disabled={!tick}
+            <TouchableOpacity
+              onPress={() => {
+                console.log('ehheee');
+                setIsHistory(true);
+              }}
+              style={{height: '100%'}}>
+              <Text
                 style={{
-                  width,
-                  backgroundColor: '#D3FB51',
-                  marginTop: '15%',
-                  paddingHorizontal: 10,
-                  paddingVertical: 12,
-                  borderRadius: 8,
+                  color: 'white',
+                  fontSize: 14,
+                  fontWeight: '700',
+                  marginTop: '20%',
+                  marginRight: 15,
                 }}>
-                <Text style={{color: 'black', textAlign: 'center'}}>
-                  {isResult ? 'Next' : 'Submit'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <ConfirmModal
-              modalVisible={modalVisible}
-              setModalVisible={setModalVisible}
-              submit={submit}
-            />
+                View History
+              </Text>
+            </TouchableOpacity>
           </View>
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 20,
+              fontWeight: '400',
+              textAlign: 'left',
+            }}>
+            Choose the best answer to the question below. Each question might
+            have more than 1 correct answer
+          </Text>
+          {isResult ? (
+            <Result question={question} answer={answer} />
+          ) : (
+            <Question
+              setTick={setTick}
+              tick={tick}
+              question={question}
+              setAnswer={setAnswer}
+            />
+          )}
+
+          <View
+            style={{
+              height: 200,
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
+            <TouchableOpacity
+              onPress={() => {
+                if (isResult) {
+                  props.navigation.navigate('GameHome', {
+                    params: {tag: 'hehe'},
+                  });
+                  return;
+                }
+                setModalVisible(true);
+              }}
+              disabled={!tick}
+              style={{
+                width,
+                backgroundColor: '#D3FB51',
+                marginTop: '15%',
+                paddingHorizontal: 10,
+                paddingVertical: 12,
+                borderRadius: 8,
+              }}>
+              <Text style={{color: 'black', textAlign: 'center'}}>
+                {isResult ? 'Next' : 'Submit'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <ConfirmModal
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            submit={submit}
+          />
         </View>
-      )}
+      </View>
     </SafeAreaView>
   );
 }

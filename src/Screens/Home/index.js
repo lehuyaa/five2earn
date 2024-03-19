@@ -64,9 +64,9 @@ function HomeScreen(props) {
             if (tag.id) {
               const check = await checkNFCRq(tag.id);
               await AsyncStorage.setItem('nfcID', tag.id);
-              // if (check?.meta?.pagination?.total === 1) {
-              navigation.navigate('Game', {params: {tag}});
-              // }
+              if (check?.meta?.pagination?.total === 1) {
+                navigation.navigate('Game', {params: {tag}});
+              }
             }
           }}
           style={{width, backgroundColor: '#553EF4', marginTop: '15%'}}>

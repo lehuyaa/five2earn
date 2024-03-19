@@ -15,3 +15,7 @@ export const getQuestion = async (index) => {
 export const requestAnswer = async (body) => {
   return await request.post('api/feedbacks', body);
 };
+
+export const getHistory = async (nfcId) => {
+  return await request.get(`api/feedbacks?filters[IdNFC][$eq]=${nfcId}`);
+};

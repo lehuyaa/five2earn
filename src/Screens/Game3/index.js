@@ -4,7 +4,7 @@ import {useScanNFC} from '../../hooks/useScanNFC';
 import {Button} from 'react-native-paper';
 import QuizApp from './QuizApp';
 import {checkNFC} from '../../api/modules/nfc/api-nfc';
-import Toast from 'react-native-toast-message';
+import ModalError from './ModalError';
 
 const padding = 40;
 const width = Dimensions.get('window').width - 2 * padding;
@@ -12,17 +12,14 @@ function Game3(props) {
   const {scanNFC} = useScanNFC();
   const [isQuizApp, setIsQuizApp] = React.useState(false);
   const [matchId, setMatchId] = React.useState('');
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   const checkNFCRq = async (nfcId) => {
     try {
       const check = await checkNFC(nfcId);
       return check;
     } catch (error) {
-      console.log(JSON.stringify(error));
-      Toast.show({
-        type: 'error',
-        text1: 'Wrong NFC',
-      });
+      setModalVisible(true);
       return null;
     }
   };
@@ -51,23 +48,37 @@ function Game3(props) {
           }}
           source={require('../../../images/Game/bg_pattern.png')}
         />
-        <Text
-          style={{
-            color: '#77F94C',
-            fontSize: 28,
-            fontWeight: '700',
-            marginTop: '40%',
-            marginLeft: 10,
-            marginRight: 10,
-          }}>
-          Choose the correct answer and become the winner!{' '}
-        </Text>
+        <View style={{paddingHorizontal: 16}}>
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 24,
+              fontWeight: '700',
+              marginTop: '30%',
+              textAlign: 'left',
+            }}>
+            Networking Quiz
+          </Text>
+          <Text
+            style={{
+              color: '#D1D3D4',
+              fontSize: 16,
+              fontWeight: '700',
+              marginTop: 10,
+            }}>
+            Rules: Socialize, network and build relationship with your peers,
+            scan their NFCs (one per each contact) and answer blockchain-related
+            quiz questions. Each correct response will be rewarded 5 points.
+          </Text>
+        </View>
+
         <Image
           style={{
-            height: 300,
-            marginTop: '10%',
+            height: 200,
+            width: 230,
+            marginTop: '20%',
           }}
-          source={require('../../asstes/images/group.png')}
+          source={require('../../../images/Game/01.png')}
         />
         <Button
           mode="contained"
@@ -81,10 +92,14 @@ function Game3(props) {
               }
             }
           }}
-          style={{width, backgroundColor: '#553EF4', marginTop: '15%'}}>
-          SCAN NFC
+          style={{width, backgroundColor: '#553EF4', marginTop: '20%'}}>
+          Scan another player’s NFC
         </Button>
       </View>
+      <ModalError
+        setModalVisible={setModalVisible}
+        modalVisible={modalVisible}
+      />
     </View>
   );
 }

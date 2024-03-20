@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useEffect} from 'react';
 import {
   View,
@@ -30,24 +31,15 @@ function QuizApp(props) {
   const getIndex = async () => {
     try {
       const nfcID = await AsyncStorage.getItem('nfcID');
-
       const res = await getIndexQuestion(nfcID);
       const index = res?.meta?.pagination?.total + 1;
       const resQuestion = await getQuestion(index);
-      // const resQuestion = null;
-      setQuestion(
-        resQuestion?.data[0].attributes || {
-          Content: 'On which blockchain is AN1 based?',
-          Answer1: 'A - Binance Chain',
-          Answer2: 'B - Ethereum',
-          Answer3: 'C - Polygon',
-          createdAt: '2024-03-18T16:25:09.225Z',
-          updatedAt: '2024-03-18T16:41:12.425Z',
-          publishedAt: '2024-03-18T16:26:46.673Z',
-          CorrectAnswer: 'Answer1',
-          STT: 2,
-        },
-      );
+
+      if (resQuestion?.data[0]?.attributes) {
+        setQuestion(resQuestion?.data[0]?.attributes);
+      } else {
+        props.navigation.navigate('GameHome');
+      }
     } catch (error) {
       Toast.show({
         type: 'error',

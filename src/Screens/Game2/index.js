@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
@@ -18,6 +19,7 @@ import {
   getListAnswer,
   updateStatusGame,
 } from '../../api/modules/api-app/api_game2';
+import {updatePointAPI} from '../../api/modules/nfc/api-nfc';
 
 const {width} = Dimensions.get('window');
 
@@ -31,9 +33,8 @@ function Game2(props) {
   const [listAnswerSended, setListAnswerSended] = useState([]);
   const [result, setResult] = useState([]);
   const [isCompleteGame, setIsCompleteGame] = useState(false);
-
+  const [userName, setUserName] = useState('');
   const progress = ((countLevelCompleted + 1) / 3) * 100;
-  const myIdNFC = 10;
 
   useEffect(() => {
     onGetAnswer();
@@ -41,12 +42,14 @@ function Game2(props) {
   }, [countLevelCompleted]);
 
   const onGetAnswer = async () => {
+    const name = await AsyncStorage.getItem('userName');
+    setUserName(name);
     try {
       const response = await getListAnswer();
       console.log('list answer: ', response.data);
       if (response.data?.length > 0) {
-        const {level1, level2, level3} = response.data[0].attributes;
-        setListAnswer([level1, level2, level3]);
+        const {Password1, Password2, Password3} = response.data[0].attributes;
+        setListAnswer([Password1, Password2, Password3]);
       }
     } catch (error) {
       console.log('Error: ', error);
@@ -54,6 +57,7 @@ function Game2(props) {
   };
 
   const onGetStatusGame = async () => {
+    const myIdNFC = await AsyncStorage.getItem('nfcID');
     try {
       const response = await checkStatusGame({
         'filters[IdNFC][$eq]': myIdNFC,
@@ -62,9 +66,9 @@ function Game2(props) {
 
       if (response.data?.length > 0) {
         const {
-          Level1: level1,
-          Level2: level2,
-          Level3: level3,
+          Password1: level1,
+          Password2: level2,
+          Password3: level3,
           Answer1: answer1,
           Answer2: answer2,
           Answer3: answer3,
@@ -109,21 +113,47 @@ function Game2(props) {
     // if answer is correct
     if (answerRemaining.includes(valueSend)) {
       console.log('answer success', answerRemaining);
+      const myInfo = JSON.parse(await AsyncStorage.getItem('myInfo'));
+      console.log('myInfo: ', myInfo);
       await updateStatusGame(
         {
           data: {
-            [`Level${countLevelCompleted + 1}`]: true,
+            [`Password${countLevelCompleted + 1}`]: true,
             [`Answer${countLevelCompleted + 1}`]: valueSend,
           },
         },
         idGame,
       );
+
+      const response = await updatePointAPI(
+        {
+          data: {
+            Point: myInfo.attributes?.Point + 1,
+          },
+        },
+        myInfo.id,
+      );
+      if (response.data)
+        await AsyncStorage.setItem('myInfo', JSON.stringify(response?.data));
     } else {
       // if answer is incorrect
+      console.log(
+        'answer incorrect',
+        valueSend,
+        {
+          data: {
+            [`Password${countLevelCompleted + 1}`]: false,
+            [`Answer${countLevelCompleted + 1}`]: valueSend,
+          },
+        },
+        idGame,
+        countLevelCompleted,
+      );
+
       await updateStatusGame(
         {
           data: {
-            [`Level${countLevelCompleted + 1}`]: false,
+            [`Password${countLevelCompleted + 1}`]: false,
             [`Answer${countLevelCompleted + 1}`]: valueSend,
           },
         },
@@ -134,6 +164,7 @@ function Game2(props) {
     setIsShowConfirmModal(false);
     setInputValue('');
   };
+
   const onChangeInput = (text) => {
     setInputValue(text);
   };
@@ -228,7 +259,7 @@ function Game2(props) {
                   fontWeight: '700',
                   lineHeight: 28.8,
                 }}>
-                Choose your correct password
+                {isCompleteGame ? 'Hi ' + userName : 'Find the Password'}
               </Text>
               <Text
                 style={{
@@ -238,7 +269,10 @@ function Game2(props) {
                   lineHeight: 19,
                   marginTop: 10,
                 }}>
-                You are allowed 3 passwords for this game
+                {isCompleteGame
+                  ? 'Here is your results'
+                  : `Rules: 
+There are 3 secret phrases hidden around the corners of this event venue. Try to collect them all. Each discovery will be rewarded 3 points. You have only 3 limited attempts, so use them wisely.`}
               </Text>
             </View>
 
@@ -337,12 +371,16 @@ function Game2(props) {
                     marginBottom: !isCompleteGame ? 150 : 0,
                   }}>
                   <View style={styles.labelContainer}>
-                    <Text style={styles.label}>Password 1</Text>
+                    <Text style={styles.label}>
+                      Password {countLevelCompleted + 1}
+                    </Text>
                   </View>
                   <TextInput
                     style={styles.input}
                     value={inputValue}
-                    placeholder="Input your password 1"
+                    placeholder={
+                      'Input your password ' + (countLevelCompleted + 1)
+                    }
                     placeholderTextColor="rgba(255, 255, 255, 0.5)"
                     onChangeText={onChangeInput}
                   />
@@ -360,13 +398,17 @@ function Game2(props) {
                   screen: 'GameHome',
                 })
               }>
-              <Text style={styles.nextButtonText}>Next</Text>
+              <Text style={styles.nextButtonText}>
+                Back to Select Game Page
+              </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={styles.nextButton}
               onPress={() => setIsShowConfirmModal(true)}>
-              <Text style={styles.nextButtonText}>Next</Text>
+              <Text style={styles.nextButtonText}>
+                {countLevelCompleted > 2 ? 'View your result ' : 'Next'}
+              </Text>
             </TouchableOpacity>
           )}
         </ScrollView>

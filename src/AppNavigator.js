@@ -19,6 +19,7 @@ import ConfirmJoinGame from './Screens/ConfirmJoinGame';
 import WinScreen from './Screens/Win';
 import Test from './Screens/Game1/test';
 import LoseScreen from './Screens/Lose';
+import InputUserNameSceen from './Screens/EnterUserName';
 
 const RootStack = createStackNavigator();
 const GameStack = createStackNavigator();
@@ -56,6 +57,7 @@ function Root(props) {
       />
 
       <RootStack.Screen name="Game" component={GameScreen} />
+      <RootStack.Screen name="EnterUserName" component={InputUserNameSceen} />
     </RootStack.Navigator>
   );
 }

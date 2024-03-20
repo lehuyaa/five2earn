@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {
   Dimensions,
@@ -11,6 +12,17 @@ import {
 const {width} = Dimensions.get('window');
 
 function WinScreen(props) {
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    getUserName();
+  }, []);
+
+  const getUserName = async () => {
+    const name = await AsyncStorage.getItem('userName');
+    console.log('name', name);
+    setUserName(name);
+  };
   const handleNext = () => {
     props.navigation.navigate('Game', {
       screen: 'GameHome',
@@ -34,7 +46,7 @@ function WinScreen(props) {
               fontWeight: '700',
               lineHeight: 28.8,
             }}>
-            Congratulation Cuong!
+            Congratulation {userName || ''}!
           </Text>
           <Text
             style={{

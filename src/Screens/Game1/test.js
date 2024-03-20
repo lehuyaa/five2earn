@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useState} from 'react';
 import {
   Image,
@@ -10,24 +11,27 @@ import {
 
 function Test(props) {
   const [myIDNFC, setMyIDNFC] = useState('');
-  const [idNFCCompetior, setIdNFCCompetior] = useState('');
+  const [idNfcCompetitor, setIdNfcCompetior] = useState('');
 
   // handle onChange inputs
   const handleMyIDNFC = (text) => {
     setMyIDNFC(text);
   };
   const handleIdNFCCompetior = (text) => {
-    setIdNFCCompetior(text);
+    setIdNfcCompetior(text);
   };
 
-  // handle next button send myIDNFC,idNFCCompetior to next screen use navigation
-  const handleNext = () => {
+  // handle next button send myIDNFC,idNfcCompetitor to next screen use navigation
+  const handleNext = async () => {
     // do something
+    console.log('myIDNFC', myIDNFC);
+    console.log('idNfcCompetitor', idNfcCompetitor);
+    await AsyncStorage.setItem('nfcID', myIDNFC);
     props.navigation.navigate('Game', {
       screen: 'ConfirmJoinGame',
       params: {
         myIDNFC,
-        idNFCCompetior,
+        idNfcCompetitor,
       },
     });
   };
@@ -52,7 +56,7 @@ function Test(props) {
 
       <View style={styles.password}>
         <View style={styles.labelContainer}>
-          <Text style={styles.label}>idNFCCompetior</Text>
+          <Text style={styles.label}>idNfcCompetitor</Text>
           <Image
             source={require('../../../images/Game/x-icon.png')}
             style={styles.icon}
@@ -62,7 +66,7 @@ function Test(props) {
           style={styles.input}
           placeholder="Input your password 3"
           placeholderTextColor="rgba(255, 255, 255, 0.5)"
-          myIDNFC={idNFCCompetior}
+          myIDNFC={idNfcCompetitor}
           onChangeText={handleIdNFCCompetior}
         />
       </View>

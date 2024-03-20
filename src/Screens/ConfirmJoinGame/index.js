@@ -1,10 +1,13 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
-import {Dimensions, Modal, View} from 'react-native';
 import {
+  Dimensions,
   ImageBackground,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import {
   checkCanStartGameAPI,
@@ -29,7 +32,7 @@ function ConfirmJoinGame(props) {
   const [isFetching, setIsFetching] = useState(false);
   const [isWaitCompetitor, setIsWaitCompetitor] = useState(false);
   const [isExistPreviousMatch, setIsExistPreviousMatch] = useState(false);
-  const {myIDNFC, idNFCCompetior} = route.params;
+  const {idNfcCompetitor} = route.params;
 
   useEffect(() => {
     if (isWaitCompetitor) {
@@ -44,7 +47,7 @@ function ConfirmJoinGame(props) {
             screen: 'GameHome',
           });
         }, 3000);
-      }, 250000);
+      }, 15000);
 
       // Clean up the interval on component unmount
       return () => {
@@ -55,6 +58,7 @@ function ConfirmJoinGame(props) {
   }, [isWaitCompetitor]);
 
   const onWaitCompetitorReply = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     if (isFetching) return; // Exit if a fetch is already in progress
 
     setIsFetching(true); // Set fetching flag
@@ -71,8 +75,7 @@ function ConfirmJoinGame(props) {
         navigation.navigate('Game', {
           screen: 'Game1',
           params: {
-            myIDNFC,
-            idNFCCompetior,
+            idNfcCompetitor,
           },
         });
       }
@@ -84,9 +87,10 @@ function ConfirmJoinGame(props) {
   };
 
   const onCheckExistPreviousMatch = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     const checkExistPreviousMatchParams = {
       'filters[IdNFC][$eq]': myIDNFC,
-      'filters[MatchedIdNFC][$eq]': idNFCCompetior,
+      'filters[MatchedIdNFC][$eq]': idNfcCompetitor,
       'filters[$or][0][Status][$eq]': 'WIN',
       'filters[$or][1][Status][$eq]': 'LOSE',
     };
@@ -109,6 +113,7 @@ function ConfirmJoinGame(props) {
   };
 
   const onCheckAndUpdateMatchPending = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     try {
       const checkStatusMatchPendingParams = {
         'filters[IdNFC][$eq]': myIDNFC,
@@ -142,10 +147,11 @@ function ConfirmJoinGame(props) {
   };
 
   const onCheckAndUpdateMatchProgress = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     try {
       const checkExistMatchProgressParams = {
         'filters[IdNFC][$eq]': myIDNFC,
-        'filters[MatchedIdNFC][$eq]': idNFCCompetior,
+        'filters[MatchedIdNFC][$eq]': idNfcCompetitor,
         'filters[Status][$eq]': 'PROGRESS',
       };
       const checkExistMatchProgressResponse = await checkExistMatchProgressAPI(
@@ -176,6 +182,7 @@ function ConfirmJoinGame(props) {
   };
 
   const onCheckAndUpdateMatchCurrent = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     const checkMatchCurrentPendingParams = {
       'filters[MatchedIdNFC][$eq]': myIDNFC,
       'filters[Status][$eq]': 'PENDING',
@@ -196,7 +203,7 @@ function ConfirmJoinGame(props) {
           IdNFC: myIDNFC,
           Status: 'PROGRESS',
           Point: 0,
-          MatchedIdNFC: idNFCCompetior,
+          MatchedIdNFC: idNfcCompetitor,
         },
       });
       await updateMatchStatusToProgressAPI(
@@ -211,7 +218,7 @@ function ConfirmJoinGame(props) {
         screen: 'Game1',
         params: {
           myIDNFC,
-          idNFCCompetior,
+          idNfcCompetitor,
         },
       });
     } else {
@@ -222,7 +229,7 @@ function ConfirmJoinGame(props) {
           IdNFC: myIDNFC,
           Status: 'PENDING',
           Point: 0,
-          MatchedIdNFC: idNFCCompetior,
+          MatchedIdNFC: idNfcCompetitor,
         },
       });
 

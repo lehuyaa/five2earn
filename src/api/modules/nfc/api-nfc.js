@@ -19,3 +19,19 @@ export const requestAnswer = async (body) => {
 export const getHistory = async (nfcId) => {
   return await request.get(`api/feedbacks?filters[IdNFC][$eq]=${nfcId}`);
 };
+
+export const sendUserNameAPI = async (params) => {
+  return await request.post(`api/players`, params);
+};
+
+export const checkFirstScanAPI = async (idNfc) => {
+  return await request.get(`api/players?filters[IdNFC][$eq]=${idNfc}`);
+};
+
+export const updatePointAPI = async (params, id) => {
+  return await request.put(`api/players/${id}`, params);
+};
+
+export const getShowGameAPI = async () => {
+  return await request.get(`api/choose-games`);
+};

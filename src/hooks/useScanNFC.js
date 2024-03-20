@@ -3,10 +3,10 @@ import {Alert} from 'react-native';
 export const useScanNFC = () => {
   const scanNFC = async () => {
     try {
-      // const tag = await NfcProxy.readTag();
-      const tag = {
-        id: '042A2682511390',
-      };
+      const tag = await NfcProxy.readTag();
+      // const tag = {
+      //   id: '04762782511390',
+      // };
       if (tag) {
         return tag;
       }

@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
@@ -8,13 +9,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Card from './components/Card';
-import JiggleCard from './components/JiggleCard';
 import {
   checkExistMatchProgressAPI,
   checkProgressionCompetitorAPI,
   updateMatchStatusToLoseAPI,
 } from '../../api/modules/api-app/api_game1';
+import {updatePointAPI} from '../../api/modules/nfc/api-nfc';
+import Card from './components/Card';
+import JiggleCard from './components/JiggleCard';
 
 const {width} = Dimensions.get('window');
 
@@ -31,7 +33,18 @@ function Game1(props) {
   const [timer, setTimer] = useState(15);
   const [isClearTimeoutSoWin, setIsClearTimeoutSoWin] = useState(false);
   const progress = ((countLevelCompleted + 1) / 5) * 100;
-  const {myIDNFC, idNFCCompetior} = route.params;
+  const {idNfcCompetitor} = route.params;
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    getUserName();
+  }, []);
+
+  const getUserName = async () => {
+    const name = await AsyncStorage.getItem('userName');
+    console.log('name', name);
+    setUserName(name);
+  };
 
   // TODO: count down time
   useEffect(() => {
@@ -131,10 +144,11 @@ function Game1(props) {
   };
 
   const onCheckResultOfMatch = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     try {
       const responseCheckProgressionCompetitor =
         await checkProgressionCompetitorAPI({
-          'filters[IdNFC][$eq]': idNFCCompetior,
+          'filters[IdNFC][$eq]': idNfcCompetitor,
           'filters[MatchedIdNFC][$eq]': myIDNFC,
           'filters[Status][$eq]': 'WIN',
         });
@@ -160,9 +174,10 @@ function Game1(props) {
 
   // handle lose
   const handleLose = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     const infoCurrentMatch = await checkExistMatchProgressAPI({
       'filters[IdNFC][$eq]': myIDNFC,
-      'filters[MatchedIdNFC][$eq]': idNFCCompetior,
+      'filters[MatchedIdNFC][$eq]': idNfcCompetitor,
       'filters[Status][$eq]': 'PROGRESS',
     });
     const {id} = infoCurrentMatch.data[0];
@@ -177,11 +192,14 @@ function Game1(props) {
   };
 
   const handleWin = async () => {
+    const myIDNFC = await AsyncStorage.getItem('nfcID');
     const infoCurrentMatch = await checkExistMatchProgressAPI({
       'filters[IdNFC][$eq]': myIDNFC,
-      'filters[MatchedIdNFC][$eq]': idNFCCompetior,
+      'filters[MatchedIdNFC][$eq]': idNfcCompetitor,
       'filters[Status][$eq]': 'PROGRESS',
     });
+
+    const myInfo = JSON.parse(await AsyncStorage.getItem('myInfo'));
     const {id} = infoCurrentMatch.data[0];
     await updateMatchStatusToLoseAPI(
       {
@@ -191,6 +209,18 @@ function Game1(props) {
       },
       id,
     );
+
+    const response = await updatePointAPI(
+      {
+        data: {
+          Point: myInfo.attributes?.Point + 1,
+        },
+      },
+      myInfo.id,
+    );
+
+    if (response.data)
+      await AsyncStorage.setItem('myInfo', JSON.stringify(response?.data));
   };
   return (
     <View style={styles.grid}>
@@ -223,7 +253,7 @@ function Game1(props) {
               fontWeight: '500',
               lineHeight: 24,
             }}>
-            Cuong
+            {userName || ''}
           </Text>
           <Text>
             <Text

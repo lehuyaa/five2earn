@@ -1,9 +1,22 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {ImageBackground} from 'react-native';
 import {Text} from 'react-native';
 
-function LoseScreen() {
+function LoseScreen(props) {
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    getUserName();
+  }, []);
+
+  const getUserName = async () => {
+    const name = await AsyncStorage.getItem('userName');
+    console.log('name', name);
+    setUserName(name);
+  };
+
   const handleNext = () => {
     props.navigation.navigate('Game', {
       screen: 'GameHome',
@@ -25,7 +38,7 @@ function LoseScreen() {
               fontWeight: '700',
               lineHeight: 28.8,
             }}>
-            Hey Cuong!
+            Hey {userName || ''}!
           </Text>
           <Text
             style={{
